@@ -1,4 +1,4 @@
-from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, UploadFile
+from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, UploadFile,HTTPException, status
 from sqlalchemy import select
 
 from models import User, RepairRequest
@@ -61,20 +61,59 @@ async def create_repair_request(bgt: BackgroundTasks,
 
 
 @router.get("/repairs")
-async def get_all_repairs(current_user: dict = Depends(get_current_user)):
-    return {"message": "Get all repair requests endpoint"}
-
+async def get_all_repairs(current_user: dict = Depends(get_current_user),
+                          db: AsyncSession = Depends(get_db)):
+    repairs = await db.scalars(select(RepairRequest).where(RepairRequest.user_id == int(current_user["sub"])))
+    return repairs.all()
 
 @router.get("/repair/{repair_id}")
-async def get_repair_request(repair_id: int, current_user: dict = Depends(get_current_user)):
-    return {"message": f"Get repair request {repair_id} endpoint"}
+async def get_repair_request(repair_id: int, 
+                             current_user: dict = Depends(get_current_user),
+                             db: AsyncSession = Depends(get_db)):
+    stmt = select(RepairRequest).where(RepairRequest.id == int(repair_id))
+    repair_request = await db.scalar(stmt)
+    return repair_request
 
 
 @router.put("/repair/{repair_id}")
-async def update_repair_request(repair_id: int, current_user: dict = Depends(get_current_user)):
-    return {"message": f"Update repair request {repair_id} endpoint"}   
+async def update_repair_request(repair_id: int, 
+                                current_user: dict = Depends(get_current_user),
+                                db: AsyncSession = Depends(get_db),
+                                description: str = Form(...),
+                                image: UploadFile|None = File(None),
+                                required_time: datetime| None = Form(None)):
+    stmt = select(RepairRequest).where(RepairRequest.id == repair_id,
+                                       RepairRequest.user_id == int(current_user["sub"]))
+    result = await db.execute(stmt)
+    repair = result.scalar_one_or_none()
+    if not repair:
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Repair request not found")
+    
+    if description:
+        repair.description = description
+    if image:
+        if repair.photo_url:
+             await save_file.delete_file(repair.photo_url)
+             image_url = await generate_file_url(image.filename)
+             await save_file(image,image_url)
+
+             repair.photo_url = image_url
+    if required_time:
+        repair.required_time = required_time
+    await db.commit()
+    await db.refresh(repair)
+    return repair
+      
 
 
 @router.delete("/repair/{repair_id}")       
-async def delete_repair_request(repair_id: int, current_user: dict = Depends(get_current_user)):
-    return {"message": f"Delete repair request {repair_id} endpoint"}
+async def delete_repair_request(repair_id: int, 
+                                current_user: dict = Depends(get_current_user),
+                                db: AsyncSession = Depends(get_db)):
+    stmt = select(RepairRequest).where(RepairRequest.id == repair_id, RepairRequest.user_id == int(current_user["sub"]))
+    result = await db.execute(stmt)
+    repair = result.scalar_one_or_none()
+    if repair:
+        await db.delete(repair)
+        await db.commit()
+        return {"message": f"Delete repair request {repair_id} endpoint"}
