@@ -137,3 +137,12 @@ class Rewiews(Base):
     content: Mapped[str] = mapped_column(Text, nullable=False)
 
     created_at: Mapped[dt.datetime] = mapped_column(DateTime, default=func.now())
+
+
+class Users_in_Telegram(Base):
+    __tablename__ = "users_in_telegram"
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    tg_code: Mapped[str] = mapped_column(String(50))
+
+    user_tg_id: Mapped[str] = mapped_column(String(255), nullable=False)
+    user_in_site: Mapped[int] = mapped_column(ForeignKey("users.id"))
