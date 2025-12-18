@@ -4,7 +4,7 @@ import os
 from dotenv import load_dotenv
 from aiogram.filters import Command
 from sqlalchemy import select
-from models import User, Users_in_telegram
+from models import User
 from settings import async_session
 from models import RepairRequest,Users_in_Telegram
 
@@ -19,7 +19,7 @@ dp: Dispatcher = Dispatcher()
 
 async def send_msg(user_site_id, message):
     async with async_session() as session:
-        user_tg_info = await session.execute(select(Users_in_telegram).filter_by(user_in_site=user_site_id))
+        user_tg_info = await session.execute(select(Users_in_Telegram).filter_by(user_in_site=user_site_id))
         user_tg_info = user_tg_info.scalars().one_or_none()
         if user_tg_info and user_tg_info.user_tg_id:
             await bot.send_message(chat_id=user_tg_info.user_tg_id, text=message)
@@ -36,7 +36,7 @@ async def start_command(message: types.Message):
         user_tg_id = message.chat.id
 
         async with async_session() as session:
-            stmt = select(Users_in_telegram).where(Users_in_telegram.tg_code == user_code)
+            stmt = select(Users_in_Telegram).where(Users_in_Telegram.tg_code == user_code)
             user_check = await session.execute(stmt)
             user_check = user_check.scalar_one_or_none()
 
