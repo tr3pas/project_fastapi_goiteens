@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from models import User, RepairRequest, AdminMessage, RequestStatus
 from routes.auth import get_current_user, require_admin
 from settings import get_db
+from tg_bot import send_msg
 
 router = APIRouter()
 
@@ -42,6 +43,7 @@ async def take_repair(
     
     await db.commit()
     await db.refresh(repair)
+    send_msg(repair.user_id,"Вашу зявку прийняли! \n Очікуйте на подальші повідомлення майстра")
     return repair
 
 
@@ -74,6 +76,7 @@ async def change_repair_status(
     
     await db.commit()
     await db.refresh(repair)
+    send_msg(repair.user_id,"Статус заявки на ремонт змінено!")
     return repair
 
 
@@ -101,4 +104,5 @@ async def create_comment(
     db.add(new_message)
     await db.commit()
     await db.refresh(new_message)
+    send_msg(repair.user_id,"Надійшло нове повідомлення!")
     return new_message

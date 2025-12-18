@@ -21,11 +21,16 @@ async def insert_data():
             password=generate_password_hash("admin"),
         )
         u2 = User(
-            username="user",
+            username="user2",
             email="user@ex.com",
-            password=generate_password_hash("user"),
+            password=generate_password_hash("user2"),
         )
-        session.add_all([u1, u2])
+        u3 = User(
+            username="user3",
+            email="user@ex.com",
+            password=generate_password_hash("user3"),
+        )
+        session.add_all([u1, u2, u3])
         await session.commit()
 
 
