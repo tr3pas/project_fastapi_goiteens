@@ -1,8 +1,9 @@
 # routes/frontend.py - Виправлений файл
 
-from fastapi import APIRouter, Request, Form, Response, Depends, HTTPException, status
-from fastapi.templating import Jinja2Templates
+from fastapi import (APIRouter, Depends, Form, HTTPException, Request,
+                     Response, status)
 from fastapi.responses import RedirectResponse
+from fastapi.templating import Jinja2Templates
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from werkzeug.security import generate_password_hash
@@ -26,16 +27,14 @@ async def home(request: Request, error: str | None = None):
 
 # ==================== AUTH PAGES ====================
 
+
 @router.get("/auth/login")
-async def login_page(request: Request, error: str | None = None, success: str | None = None):
+async def login_page(
+    request: Request, error: str | None = None, success: str | None = None
+):
     """Сторінка входу"""
     return templates.TemplateResponse(
-        "login.html", 
-        {
-            "request": request, 
-            "error": error,
-            "success": success
-        }
+        "login.html", {"request": request, "error": error, "success": success}
     )
 
 
@@ -43,11 +42,7 @@ async def login_page(request: Request, error: str | None = None, success: str | 
 async def register_page(request: Request, error: str | None = None):
     """Сторінка реєстрації"""
     return templates.TemplateResponse(
-        "register.html", 
-        {
-            "request": request, 
-            "error": error
-        }
+        "register.html", {"request": request, "error": error}
     )
 
 
@@ -62,48 +57,42 @@ async def login_form(
     try:
         # Викликаємо функцію authenticate_user безпосередньо
         user = await authenticate_user(username, password)
-        
+
         if not user:
             return templates.TemplateResponse(
                 "login.html",
-                {
-                    "request": request,
-                    "error": "Невірне ім'я користувача або пароль"
-                },
-                status_code=401
+                {"request": request, "error": "Невірне ім'я користувача або пароль"},
+                status_code=401,
             )
-        
+
         # Створюємо токен
         data_payload = {
-            "sub": str(user.id), 
-            "email": user.email, 
+            "sub": str(user.id),
+            "email": user.email,
             "username": user.username,
-            "is_admin": user.is_admin
+            "is_admin": user.is_admin,
         }
         access_token = create_access_token(payload=data_payload)
-        
+
         # Створюємо redirect response
         redirect = RedirectResponse(url="/", status_code=303)
-        
+
         # Встановлюємо cookie з токеном
         redirect.set_cookie(
             key="access_token",
             value=access_token,
             httponly=True,
             max_age=24 * 60 * 60,  # 1 день
-            samesite="lax"
+            samesite="lax",
         )
-        
+
         return redirect
-                
+
     except Exception as e:
         return templates.TemplateResponse(
             "login.html",
-            {
-                "request": request,
-                "error": f"Помилка при вході: {str(e)}"
-            },
-            status_code=500
+            {"request": request, "error": f"Помилка при вході: {str(e)}"},
+            status_code=500,
         )
 
 
@@ -113,25 +102,20 @@ async def register_form(
     username: str = Form(...),
     email: str = Form(...),
     password: str = Form(...),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
 ):
     """Обробка форми реєстрації"""
-    
+
     try:
         # Перевірка чи існує користувач з таким email
-        existing_user = await db.scalar(
-            select(User).where(User.email == email)
-        )
+        existing_user = await db.scalar(select(User).where(User.email == email))
         if existing_user:
             return templates.TemplateResponse(
                 "register.html",
-                {
-                    "request": request,
-                    "error": "Користувач з таким email вже існує"
-                },
-                status_code=400
+                {"request": request, "error": "Користувач з таким email вже існує"},
+                status_code=400,
             )
-        
+
         # Перевірка чи існує користувач з таким username
         existing_username = await db.scalar(
             select(User).where(User.username == username)
@@ -139,35 +123,29 @@ async def register_form(
         if existing_username:
             return templates.TemplateResponse(
                 "register.html",
-                {
-                    "request": request,
-                    "error": "Користувач з таким іменем вже існує"
-                },
-                status_code=400
+                {"request": request, "error": "Користувач з таким іменем вже існує"},
+                status_code=400,
             )
-        
+
         # Створення нового користувача
         new_user = User(username=username, email=email)
         new_user.password = generate_password_hash(password)
-        
+
         db.add(new_user)
         await db.commit()
         await db.refresh(new_user)
-        
+
         # Успішна реєстрація - перенаправляємо на сторінку входу
         return RedirectResponse(
             url="/auth/login?success=Реєстрація успішна! Тепер ви можете увійти",
-            status_code=303
+            status_code=303,
         )
-                
+
     except Exception as e:
         return templates.TemplateResponse(
             "register.html",
-            {
-                "request": request,
-                "error": f"Помилка при реєстрації: {str(e)}"
-            },
-            status_code=500
+            {"request": request, "error": f"Помилка при реєстрації: {str(e)}"},
+            status_code=500,
         )
 
 
@@ -183,11 +161,11 @@ async def logout():
 async def forgot_password_page(request: Request):
     """Сторінка відновлення пароля (заглушка)"""
     return templates.TemplateResponse(
-        "error.html", 
+        "error.html",
         {
             "request": request,
             "error_code": 501,
             "error_title": "Не реалізовано",
-            "error_description": "Функція відновлення пароля ще не реалізована"
-        }
+            "error_description": "Функція відновлення пароля ще не реалізована",
+        },
     )

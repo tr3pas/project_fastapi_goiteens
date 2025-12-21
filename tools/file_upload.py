@@ -1,11 +1,15 @@
-from fastapi import UploadFile
-from settings import api_config
-import uuid
 import os
+import uuid
+
 import aiofiles
+from fastapi import UploadFile
+
+from settings import api_config
 
 
-async def generate_file_url(filename: str, dest_dir:str = api_config.STATIC_IMAGES_DIR) -> str:
+async def generate_file_url(
+    filename: str, dest_dir: str = api_config.STATIC_IMAGES_DIR
+) -> str:
     # Dummy implementation, replace with actual file storage logic
     unique_filename = f"{uuid.uuid4().hex}_{filename}"
     os.makedirs(dest_dir, exist_ok=True)
@@ -13,8 +17,7 @@ async def generate_file_url(filename: str, dest_dir:str = api_config.STATIC_IMAG
     return file_path
 
 
-async def save_file(file: UploadFile, file_path: str):   
+async def save_file(file: UploadFile, file_path: str):
     async with aiofiles.open(file_path, "wb") as buffer:
         content = await file.read()
         await buffer.write(content)
-
