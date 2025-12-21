@@ -144,5 +144,5 @@ class Users_in_Telegram(Base):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     tg_code: Mapped[str] = mapped_column(String(50))
 
-    user_tg_id: Mapped[str] = mapped_column(String(255), nullable=False)
+    user_tg_id: Mapped[str] = mapped_column(String(255), nullable=True)
     user_in_site: Mapped[int] = mapped_column(ForeignKey("users.id"))

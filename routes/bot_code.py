@@ -1,9 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-
-
-from models import Users_in_telegram
+from models import Users_in_Telegram
 from routes.auth import get_current_user
 from settings import get_db
 import random
@@ -24,14 +22,14 @@ async def generate_tg_code(current_user: dict = Depends(get_current_user), db: A
     # Генерація унікального коду
     code = generate_code()
 
-    check_user = await db.scalar(select(Users_in_telegram).filter_by(user_in_site=int(current_user["sub"])))
+    check_user = await db.scalar(select(Users_in_Telegram).filter_by(user_in_site=int(current_user["sub"])))
 
     if check_user:
         check_user.tg_code = code
-        check_user.user_tg_id = None  # type: ignore
+        check_user.user_tg_id = None
 
     else:
-        check_user = Users_in_telegram(tg_code=code, user_tg_id=None, user_in_site=int(user_id))
+        check_user = Users_in_Telegram(tg_code=code, user_tg_id=None, user_in_site=int(user_id))
 
     db.add(check_user)
     await db.commit()

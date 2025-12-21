@@ -22,12 +22,12 @@ async def insert_data():
         )
         u2 = User(
             username="user2",
-            email="user@ex.com",
+            email="user2@ex.com",
             password=generate_password_hash("user2"),
         )
         u3 = User(
             username="user3",
-            email="user@ex.com",
+            email="user3@ex.com",
             password=generate_password_hash("user3"),
         )
         session.add_all([u1, u2, u3])

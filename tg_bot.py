@@ -1,5 +1,5 @@
 import asyncio
-from aiogram import Bot, Dispatcher, types
+from aiogram import Bot, Dispatcher, Router, types
 import os
 from dotenv import load_dotenv
 from aiogram.filters import Command
@@ -7,6 +7,8 @@ from sqlalchemy import select
 from models import User
 from settings import async_session
 from models import RepairRequest,Users_in_Telegram
+from schemas import request
+import httpx
 
 load_dotenv()
 
@@ -14,7 +16,9 @@ load_dotenv()
 token = os.getenv("TOKEN_BOT")
 
 bot = Bot(token=token)  # type: ignore
-dp: Dispatcher = Dispatcher()
+router = Router()
+dp = Dispatcher()
+
 
 
 async def send_msg(user_site_id, message):
@@ -51,33 +55,24 @@ async def start_command(message: types.Message):
 
 @dp.message(Command("myrequests"))
 async def repairrequests_command(message: types.Message):
-    async with async_session() as session:
-        stmt = select(RepairRequest).where(RepairRequest.user_id == Users_in_Telegram.user_in_site)
-        repairs = await session.execute(stmt)
-        repairs = repairs.scalars()
-
-        repairs.all()
+    async with httpx.AsyncClient() as client:
+        response = await client.get(f"http://127.0.0.1:8000/account/tg/repairs?tg_id={str(message.chat.id)}")
+    await message.answer(f"ваші запити на ремонт: {response.json()}")
 
 
 @dp.message(Command("messages"))
 async def messages_command(message: types.Message):
     await message.answer("Напишіть номер заявки з якої ви хочете побачити повідомлення.")
     @dp.message()
-    async def get_id(message: types.Message):
+    async def get_messages(message: types.Message):
+        print(message.chat.id)
         repair_id = message.text.strip() if message.text else ""
-        async with async_session() as session:
-            stmt = select(RepairRequest).where(RepairRequest.user_id == Users_in_Telegram.user_in_site and RepairRequest.id == repair_id)
-            repairs = await session.execute(stmt)
-            repairs = repairs.scalar()
-
-            await message.answer(repairs.messages)
+        async with httpx.AsyncClient() as client:
+            response = await client.get(f"http://127.0.0.1:8000/account/messages?tg_id={str(message.chat.id)}&repair_id={repair_id}")
+        await message.answer(f"ваші запити на ремонт: {response.json()}")
 
 
 
-async def start_bot():
-    print("--> start bot")
+async def start():
+    dp.include_router(router)
     await dp.start_polling(bot)
-
-
-if __name__ == "__main__":
-    asyncio.run(start_bot())
