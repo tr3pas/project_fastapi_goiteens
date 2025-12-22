@@ -38,16 +38,16 @@
 
 ## Технологічний стек
 
-- **Backend**: FastAPI
-- **Мова**: Python 3.11+
-- **База даних**: PostgreSQL
-- **ORM**: SQLAlchemy (async)
-- **Міграції**: Alembic
-- **Кеш / черги**: Redis
-- **Аутентифікація**: JWT
-- **Хешування паролів**: Werkzeug
-- **Шаблони**: Jinja2
-- **Frontend**: HTML, Bootstrap 5
+- FastAPI
+- Python 3.11+
+- PostgreSQL
+- SQLAlchemy (async)
+- Alembic
+- Redis
+- JWT
+- Werkzeug
+- Jinja2
+- HTML, Bootstrap 5
 
 ---
 
@@ -80,16 +80,14 @@ pip install -r requirements.txt
 ```
 
 ### Крок 4: Налаштування середовища
+Створіть файл `.env` у корені проєкту:
+
 ```
-DATABASE_NAME=repairhub_db
+DATABASE_NAME=alembic_async_db
 DB_USER=postgres
 DB_PASSWORD=your_password
-DB_HOST=localhost
-DB_PORT=5432
 
 SECRET_KEY=your_secret_key
-ALGORITHM=HS256
-ACCESS_TOKEN_EXPIRE_MINUTES=30
 ```
 
 ### Крок 5: Створення бази даних
