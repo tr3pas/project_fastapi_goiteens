@@ -38,7 +38,22 @@ async def take_repair(
 
     if not repair:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Repair not found"
+            status_code=status.HTTP_404_NOT_FOUND, 
+            detail="Repair not found"
+        )
+    
+    # Проверка, не взята ли уже заявка
+    if repair.admin_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Заявка вже прийнята іншим майстром"
+        )
+    
+    # Проверка статуса
+    if repair.status != RequestStatus.NEW:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Можна приймати тільки нові заявки"
         )
 
     repair.admin_id = admin_id
@@ -46,10 +61,16 @@ async def take_repair(
 
     await db.commit()
     await db.refresh(repair)
-    send_msg(
-        repair.user_id,
-        "Вашу зявку прийняли! \n Очікуйте на подальші повідомлення майстра",
-    )
+    
+    try:
+        send_msg(
+            repair.user_id,
+            "✅ Вашу заявку прийняли! \nОчікуйте на подальші повідомлення майстра"
+        )
+    except Exception as e:
+        # Логируем, но не падаем
+        print(f"Telegram error: {e}")
+    
     return repair
 
 
@@ -111,3 +132,4 @@ async def create_comment(
     await db.refresh(new_message)
     send_msg(repair.user_id, "Надійшло нове повідомлення!")
     return new_message
+

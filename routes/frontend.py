@@ -1,7 +1,6 @@
-# routes/frontend.py - Оновлений файл з адмін-панеллю
+# routes/frontend.py - Виправлений файл
 
-from fastapi import (APIRouter, Cookie, Depends, Form, HTTPException, Request,
-                     Response, status)
+from fastapi import (APIRouter, Cookie, Depends, Form, Request, Response)
 from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy import select
@@ -9,7 +8,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from werkzeug.security import generate_password_hash
 
 from models.models import RepairRequest, User
-from schemas.user import UserInput
 from settings import get_db
 from tools.auth import authenticate_user, create_access_token, decode_access_token
 
@@ -19,18 +17,39 @@ router = APIRouter(include_in_schema=False)
 
 # Helper function to get current user from cookie
 async def get_current_user_from_cookie(
-    access_token: str | None = Cookie(None), db: AsyncSession = Depends(get_db)
+    access_token: str | None = Cookie(None), 
+    db: AsyncSession = Depends(get_db)
 ):
+    """Отримати поточного користувача з cookie"""
+    print(f"=== GET USER FROM COOKIE DEBUG ===")
+    print(f"access_token: {access_token}")
+    
     if not access_token:
+        print("No access_token in cookie!")
         return None
     
-    user_data = decode_access_token(access_token)
-    if not user_data:
+    try:
+        user_data = decode_access_token(access_token)
+        print(f"user_data from token: {user_data}")
+        
+        if not user_data:
+            print("decode_access_token returned None!")
+            return None
+        
+        user_id = int(user_data["sub"])
+        print(f"user_id: {user_id}")
+        
+        user = await db.scalar(select(User).where(User.id == user_id))
+        print(f"user from DB: {user}")
+        print(f"is_admin: {user.is_admin if user else None}")
+        print(f"==================================")
+        
+        return user
+    except Exception as e:
+        print(f"Error getting user from cookie: {e}")
+        import traceback
+        traceback.print_exc()
         return None
-    
-    user_id = int(user_data["sub"])
-    user = await db.scalar(select(User).where(User.id == user_id))
-    return user
 
 
 @router.get("/")
@@ -56,11 +75,14 @@ async def home(
 
 @router.get("/auth/login")
 async def login_page(
-    request: Request, error: str | None = None, success: str | None = None
+    request: Request, 
+    error: str | None = None, 
+    success: str | None = None
 ):
     """Сторінка входу"""
     return templates.TemplateResponse(
-        "login.html", {"request": request, "error": error, "success": success}
+        "login.html", 
+        {"request": request, "error": error, "success": success}
     )
 
 
@@ -68,7 +90,8 @@ async def login_page(
 async def register_page(request: Request, error: str | None = None):
     """Сторінка реєстрації"""
     return templates.TemplateResponse(
-        "register.html", {"request": request, "error": error}
+        "register.html", 
+        {"request": request, "error": error}
     )
 
 
@@ -80,15 +103,25 @@ async def login_form(
     password: str = Form(...),
 ):
     """Обробка форми входу через OAuth2"""
+    print(f"\n{'='*50}")
+    print(f"LOGIN ATTEMPT")
+    print(f"Username: {username}")
+    print(f"Password length: {len(password)}")
+    print(f"{'='*50}\n")
+    
     try:
         user = await authenticate_user(username, password)
+        print(f"Authentication result: {user}")
 
         if not user:
+            print("❌ Authentication FAILED - returning error page")
             return templates.TemplateResponse(
                 "login.html",
                 {"request": request, "error": "Невірне ім'я користувача або пароль"},
                 status_code=401,
             )
+
+        print(f"✅ User authenticated: {user.username}, is_admin={user.is_admin}")
 
         # Створюємо токен
         data_payload = {
@@ -98,9 +131,13 @@ async def login_form(
             "is_admin": user.is_admin,
         }
         access_token = create_access_token(payload=data_payload)
+        print(f"✅ Token created: {access_token[:50]}...")
 
-        # Створюємо redirect response
-        redirect = RedirectResponse(url="/", status_code=303)
+        # Перенаправляємо адміна на адмін-панель, звичайного користувача на головну
+        redirect_url = "/admin" if user.is_admin else "/"
+        print(f"✅ Redirecting to: {redirect_url}")
+        
+        redirect = RedirectResponse(url=redirect_url, status_code=303)
 
         # Встановлюємо cookie з токеном
         redirect.set_cookie(
@@ -110,10 +147,17 @@ async def login_form(
             max_age=24 * 60 * 60,  # 1 день
             samesite="lax",
         )
+        
+        print(f"✅ Cookie set")
+        print(f"{'='*50}\n")
 
         return redirect
 
     except Exception as e:
+        print(f"❌ LOGIN ERROR: {e}")
+        import traceback
+        traceback.print_exc()
+        
         return templates.TemplateResponse(
             "login.html",
             {"request": request, "error": f"Помилка при вході: {str(e)}"},
@@ -130,7 +174,6 @@ async def register_form(
     db: AsyncSession = Depends(get_db),
 ):
     """Обробка форми реєстрації"""
-
     try:
         # Перевірка чи існує користувач з таким email
         existing_user = await db.scalar(select(User).where(User.email == email))
@@ -153,7 +196,7 @@ async def register_form(
             )
 
         # Створення нового користувача
-        new_user = User(username=username, email=email)
+        new_user = User(username=username, email=email, is_admin=False)
         new_user.password = generate_password_hash(password)
 
         db.add(new_user)
@@ -167,6 +210,7 @@ async def register_form(
         )
 
     except Exception as e:
+        print(f"Registration error: {e}")
         return templates.TemplateResponse(
             "register.html",
             {"request": request, "error": f"Помилка при реєстрації: {str(e)}"},
@@ -182,20 +226,6 @@ async def logout():
     return response
 
 
-@router.get("/auth/forgot-password")
-async def forgot_password_page(request: Request):
-    """Сторінка відновлення пароля (заглушка)"""
-    return templates.TemplateResponse(
-        "error.html",
-        {
-            "request": request,
-            "error_code": 501,
-            "error_title": "Не реалізовано",
-            "error_description": "Функція відновлення пароля ще не реалізована",
-        },
-    )
-
-
 # ==================== ADMIN PANEL ====================
 
 
@@ -205,10 +235,20 @@ async def admin_panel(
     current_user: User | None = Depends(get_current_user_from_cookie),
 ):
     """Адмін-панель"""
+    # DEBUG
+    print(f"=== ADMIN PANEL DEBUG ===")
+    print(f"Current user: {current_user}")
+    print(f"Is admin: {current_user.is_admin if current_user else 'No user'}")
+    print(f"========================")
+    
+    # Якщо користувач не авторизований
     if not current_user:
+        print("Redirecting to login - no user")
         return RedirectResponse(url="/auth/login", status_code=303)
     
+    # Якщо користувач не адмін
     if not current_user.is_admin:
+        print("User is not admin")
         return templates.TemplateResponse(
             "error.html",
             {
@@ -220,68 +260,13 @@ async def admin_panel(
             status_code=403,
         )
     
+    # Все OK - показуємо адмін-панель
+    print("Showing admin panel")
     return templates.TemplateResponse(
         "admin.html",
         {
             "request": request,
             "current_user": current_user,
-        },
-    )
-
-
-@router.get("/admin/repairs/all")
-async def admin_all_repairs(
-    request: Request,
-    current_user: User | None = Depends(get_current_user_from_cookie),
-):
-    """Всі заявки на ремонт"""
-    if not current_user or not current_user.is_admin:
-        return RedirectResponse(url="/auth/login", status_code=303)
-    
-    return templates.TemplateResponse(
-        "admin.html",
-        {
-            "request": request,
-            "current_user": current_user,
-            "filter": "all",
-        },
-    )
-
-
-@router.get("/admin/repairs/new")
-async def admin_new_repairs(
-    request: Request,
-    current_user: User | None = Depends(get_current_user_from_cookie),
-):
-    """Нові заявки на ремонт"""
-    if not current_user or not current_user.is_admin:
-        return RedirectResponse(url="/auth/login", status_code=303)
-    
-    return templates.TemplateResponse(
-        "admin.html",
-        {
-            "request": request,
-            "current_user": current_user,
-            "filter": "new",
-        },
-    )
-
-
-@router.get("/admin/repairs/my")
-async def admin_my_repairs(
-    request: Request,
-    current_user: User | None = Depends(get_current_user_from_cookie),
-):
-    """Мої заявки (які я взяв в роботу)"""
-    if not current_user or not current_user.is_admin:
-        return RedirectResponse(url="/auth/login", status_code=303)
-    
-    return templates.TemplateResponse(
-        "admin.html",
-        {
-            "request": request,
-            "current_user": current_user,
-            "filter": "my",
         },
     )
 
@@ -297,7 +282,9 @@ async def admin_repair_detail(
     if not current_user or not current_user.is_admin:
         return RedirectResponse(url="/auth/login", status_code=303)
     
-    repair = await db.scalar(select(RepairRequest).where(RepairRequest.id == repair_id))
+    repair = await db.scalar(
+        select(RepairRequest).where(RepairRequest.id == repair_id)
+    )
     
     if not repair:
         return templates.TemplateResponse(
@@ -321,7 +308,7 @@ async def admin_repair_detail(
     )
 
 
-# ==================== USER PAGES (заглушки) ====================
+
 
 
 @router.get("/requests/new")
@@ -334,15 +321,12 @@ async def create_request_page(
         return RedirectResponse(url="/auth/login", status_code=303)
     
     return templates.TemplateResponse(
-        "error.html",
+        "create_request.html",
         {
             "request": request,
-            "error_code": 501,
-            "error_title": "Не реалізовано",
-            "error_description": "Сторінка створення заявки ще в розробці. Використовуйте API endpoints.",
+            "current_user": current_user,
         },
     )
-
 
 @router.get("/requests")
 async def my_requests_page(
@@ -359,14 +343,13 @@ async def my_requests_page(
             "request": request,
             "error_code": 501,
             "error_title": "Не реалізовано",
-            "error_description": "Сторінка моїх заявок ще в розробці. Використовуйте API endpoints.",
+            "error_description": "Сторінка моїх заявок ще в розробці.",
         },
     )
 
 
 @router.get("/help")
 async def help_page(request: Request):
-    """Сторінка допомоги (заглушка)"""
     return templates.TemplateResponse(
         "error.html",
         {
@@ -380,7 +363,6 @@ async def help_page(request: Request):
 
 @router.get("/contacts")
 async def contacts_page(request: Request):
-    """Сторінка контактів (заглушка)"""
     return templates.TemplateResponse(
         "error.html",
         {
@@ -394,7 +376,6 @@ async def contacts_page(request: Request):
 
 @router.get("/faq")
 async def faq_page(request: Request):
-    """Сторінка FAQ (заглушка)"""
     return templates.TemplateResponse(
         "error.html",
         {
@@ -402,33 +383,5 @@ async def faq_page(request: Request):
             "error_code": 501,
             "error_title": "Не реалізовано",
             "error_description": "Сторінка FAQ ще в розробці",
-        },
-    )
-
-
-@router.get("/admin/users")
-async def admin_users_page(request: Request):
-    """Сторінка користувачів (заглушка)"""
-    return templates.TemplateResponse(
-        "error.html",
-        {
-            "request": request,
-            "error_code": 501,
-            "error_title": "Не реалізовано",
-            "error_description": "Сторінка користувачів ще в розробці",
-        },
-    )
-
-
-@router.get("/admin/reports")
-async def admin_reports_page(request: Request):
-    """Сторінка звітів (заглушка)"""
-    return templates.TemplateResponse(
-        "error.html",
-        {
-            "request": request,
-            "error_code": 501,
-            "error_title": "Не реалізовано",
-            "error_description": "Сторінка звітів ще в розробці",
         },
     )

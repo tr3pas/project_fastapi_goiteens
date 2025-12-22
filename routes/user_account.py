@@ -1,10 +1,10 @@
 from datetime import datetime
+from fastapi import (APIRouter, BackgroundTasks, Cookie, Depends, File, Form,
+                     HTTPException, Request, UploadFile, status)
 
-from fastapi import (APIRouter, BackgroundTasks, Depends, File, Form,
-                     HTTPException, UploadFile, status)
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-
+from fastapi.responses import RedirectResponse
 from models import RepairRequest, User
 from routes.auth import get_current_user
 from schemas.user import UserOut
@@ -27,30 +27,56 @@ async def user_me_data(
 
 @router.post("/repair/add")
 async def create_repair_request(
+    request: Request,
     bgt: BackgroundTasks,
-    current_user: dict = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
     description: str = Form(...),
     image: UploadFile | None = File(None),
-    required_time: datetime = Form(None),
+    required_time: str = Form(None),
+    access_token: str | None = Cookie(None),
 ):
-    user_id = current_user["sub"]
+    # Отримуємо користувача з cookie
+    if not access_token:
+        return RedirectResponse(url="/auth/login", status_code=303)
+    
+    from tools.auth import decode_access_token
+    user_data = decode_access_token(access_token)
+    if not user_data:
+        return RedirectResponse(url="/auth/login", status_code=303)
+    
+    user_id = int(user_data["sub"])
+    
+    # Обробка фото
     image_url = None
-    if image:
+    if image and image.filename:
         image_url = await generate_file_url(image.filename)
         bgt.add_task(save_file, image, image_url)
 
+    # Обробка дати
+    required_time_dt = None
+    if required_time:
+        from datetime import datetime
+        try:
+            required_time_dt = datetime.fromisoformat(required_time)
+        except:
+            pass
+
+    # Створення заявки
     new_req = RepairRequest(
-        user_id=int(user_id),
+        user_id=user_id,
         description=description,
         photo_url=image_url,
-        required_time=required_time,
+        required_time=required_time_dt,
     )
 
     db.add(new_req)
     await db.commit()
     await db.refresh(new_req)
-    return new_req
+    
+    return RedirectResponse(
+        url="/requests?success=Заявку успішно створено!", 
+        status_code=303
+    )
 
 
 @router.get("/repairs")

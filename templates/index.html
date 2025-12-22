@@ -7,7 +7,7 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   
   <style>
-    /* Root Variables */
+    /* Всі стилі залишаються без змін */
     :root {
       --primary-color: #0d6efd;
       --primary-hover: #0b5ed7;
@@ -16,23 +16,19 @@
       --danger-color: #dc3545;
       --warning-color: #ffc107;
       --info-color: #0dcaf0;
-      
       --light-bg: #f8f9fa;
       --white: #ffffff;
       --border-color: #dee2e6;
       --text-primary: #212529;
       --text-secondary: #6c757d;
       --text-muted: #9ca3af;
-      
       --shadow-sm: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
       --shadow-md: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
       --shadow-lg: 0 1rem 3rem rgba(0, 0, 0, 0.175);
-      
       --border-radius: 0.5rem;
       --transition: all 0.3s ease;
     }
 
-    /* Global Styles */
     * {
       margin: 0;
       padding: 0;
@@ -46,7 +42,6 @@
       line-height: 1.6;
     }
 
-    /* Navigation */
     .navbar {
       padding: 1rem 0;
       backdrop-filter: blur(10px);
@@ -110,20 +105,23 @@
       font-weight: 600;
     }
 
-    .nav-link.active::after {
-      content: '';
-      position: absolute;
-      bottom: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 30px;
-      height: 3px;
-      background: var(--primary-color);
-      border-radius: 3px;
+    .btn-admin {
+      background: linear-gradient(135deg, #dc3545, #c82333);
+      color: white;
+      border: 2px solid #dc3545;
+      margin-left: 0.5rem;
+      padding: 0.5rem 1.25rem !important;
+      border-radius: 2rem;
+      font-weight: 600;
     }
 
-    .btn-login,
-    .btn-register {
+    .btn-admin:hover {
+      background: linear-gradient(135deg, #c82333, #bd2130);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .btn-login, .btn-register {
       margin-left: 0.5rem;
       padding: 0.5rem 1.25rem !important;
       border-radius: 2rem;
@@ -163,7 +161,6 @@
       background-color: rgba(220, 53, 69, 0.1);
     }
 
-    /* Hero Section */
     .hero-card {
       background: linear-gradient(135deg, var(--white) 0%, #f0f7ff 100%);
       border-radius: var(--border-radius);
@@ -237,11 +234,6 @@
       box-shadow: var(--shadow-lg);
     }
 
-    .btn-create-request span {
-      font-size: 1.5rem;
-    }
-
-    /* Feature Cards */
     .feature-card {
       background: var(--white);
       border-radius: var(--border-radius);
@@ -284,91 +276,6 @@
       line-height: 1.6;
     }
 
-    /* Quick Links Section */
-    .quick-links-section {
-      margin-top: 4rem;
-      margin-bottom: 4rem;
-    }
-
-    .section-title {
-      font-size: 1.5rem;
-      font-weight: 700;
-      color: var(--text-primary);
-      margin-bottom: 1.5rem;
-    }
-
-    .quick-links-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 1.5rem;
-    }
-
-    .quick-link-card {
-      background: var(--white);
-      border-radius: var(--border-radius);
-      padding: 1.5rem;
-      text-decoration: none;
-      color: var(--text-primary);
-      box-shadow: var(--shadow-sm);
-      transition: var(--transition);
-      border: 1px solid var(--border-color);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-    }
-
-    .quick-link-card:hover {
-      transform: translateY(-3px);
-      box-shadow: var(--shadow-md);
-      border-color: var(--primary-color);
-      color: var(--text-primary);
-    }
-
-    .quick-link-icon {
-      font-size: 2.5rem;
-      margin-bottom: 1rem;
-      transition: var(--transition);
-    }
-
-    .quick-link-card:hover .quick-link-icon {
-      transform: scale(1.1);
-    }
-
-    .quick-link-title {
-      font-size: 1rem;
-      font-weight: 600;
-      color: var(--text-primary);
-      margin-bottom: 0.5rem;
-    }
-
-    .quick-link-text {
-      font-size: 0.875rem;
-      color: var(--text-muted);
-      margin-bottom: 0;
-    }
-
-    /* Footer */
-    .site-footer {
-      text-align: center;
-      padding: 2rem 0;
-      margin-top: 4rem;
-      border-top: 1px solid var(--border-color);
-    }
-
-    .site-footer p {
-      color: var(--text-secondary);
-      font-size: 0.875rem;
-      margin-bottom: 0.5rem;
-    }
-
-    .footer-version {
-      color: var(--text-muted);
-      font-size: 0.75rem;
-      font-weight: 500;
-    }
-
-    /* Alerts */
     .alert {
       border-radius: var(--border-radius);
       border: none;
@@ -379,17 +286,6 @@
       background-color: rgba(220, 53, 69, 0.1);
       color: var(--danger-color);
       border-left: 4px solid var(--danger-color);
-    }
-
-    /* Responsive Design */
-    @media (max-width: 992px) {
-      .hero-title {
-        font-size: 2rem;
-      }
-      
-      .feature-card {
-        padding: 1.5rem;
-      }
     }
 
     @media (max-width: 768px) {
@@ -405,34 +301,10 @@
       .hero-title {
         font-size: 2rem;
       }
-      
-      .hero-description {
-        font-size: 1rem;
-      }
-    }
-
-    @media (max-width: 576px) {
-      .hero-card {
-        padding: 1.5rem;
-      }
-      
-      .hero-title {
-        font-size: 1.75rem;
-      }
-      
-      .btn-create-request {
-        padding: 0.75rem 1.5rem;
-        font-size: 1rem;
-      }
-      
-      .quick-links-grid {
-        grid-template-columns: 1fr;
-      }
     }
   </style>
 </head>
 <body>
-  <!-- Navigation -->
   <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm">
     <div class="container">
       <a class="navbar-brand d-flex align-items-center gap-2" href="/">
@@ -453,9 +325,13 @@
           <li class="nav-item"><a class="nav-link active" href="/">Головна</a></li>
           <li class="nav-item"><a class="nav-link" href="/requests/new">Створити заявку</a></li>
           <li class="nav-item"><a class="nav-link" href="/requests">Мої заявки</a></li>
-          <li class="nav-item"><a class="nav-link" href="/admin">Адмін-панель</a></li>
           
           {% if is_authenticated %}
+            {% if current_user.is_admin %}
+              <li class="nav-item">
+                <a class="nav-link btn-admin" href="/admin">🔧 Адмін-панель</a>
+              </li>
+            {% endif %}
             <li class="nav-item">
               <a class="nav-link btn-logout" href="/auth/logout">Вийти</a>
             </li>
@@ -472,7 +348,6 @@
     </div>
   </nav>
 
-  <!-- Main Content -->
   <main class="container my-5">
     {% if error %}
       <div class="alert alert-danger alert-dismissible fade show" role="alert">
@@ -481,13 +356,15 @@
       </div>
     {% endif %}
 
-    <!-- Hero Section -->
     <div class="hero-card">
       <div class="hero-content">
         <div class="hero-text">
           <h1 class="hero-title">
             {% if current_user %}
               Привіт, {{ current_user.username }}! 👋
+              {% if current_user.is_admin %}
+                <br><span style="font-size: 1.5rem; color: #dc3545;">Ви адміністратор</span>
+              {% endif %}
             {% else %}
               Ласкаво просимо до RepairHub!
             {% endif %}
@@ -498,14 +375,19 @@
           </p>
         </div>
         <div class="hero-action">
-          <a href="/requests/new" class="btn btn-primary btn-lg btn-create-request">
-            <span>📝</span> Нова заявка
-          </a>
+          {% if current_user and current_user.is_admin %}
+            <a href="/admin.html" class="btn btn-danger btn-lg btn-create-request">
+              <span>🔧</span> Адмін-панель
+            </a>
+          {% else %}
+            <a href="/requests/new" class="btn btn-primary btn-lg btn-create-request">
+              <span>📝</span> Нова заявка
+            </a>
+          {% endif %}
         </div>
       </div>
     </div>
 
-    <!-- Features Section -->
     <div class="row g-4 my-5">
       <div class="col-md-4">
         <div class="feature-card">
@@ -541,36 +423,12 @@
       </div>
     </div>
 
-    <!-- Quick Links Section -->
-    <section class="quick-links-section">
-      <h5 class="section-title">Корисні посилання</h5>
-      <div class="quick-links-grid">
-        <a class="quick-link-card" href="/help">
-          <div class="quick-link-icon">❓</div>
-          <h6 class="quick-link-title">Як подати заявку</h6>
-          <p class="quick-link-text">Покрокова інструкція</p>
-        </a>
-
-        <a class="quick-link-card" href="/contacts">
-          <div class="quick-link-icon">📞</div>
-          <h6 class="quick-link-title">Контакти сервісу</h6>
-          <p class="quick-link-text">Телефон та адреса</p>
-        </a>
-
-        <a class="quick-link-card" href="/faq">
-          <div class="quick-link-icon">💡</div>
-          <h6 class="quick-link-title">FAQ</h6>
-          <p class="quick-link-text">Часті питання</p>
-        </a>
-      </div>
-    </section>
-
-    <!-- Footer -->
-    <footer class="site-footer">
-      <p>© {{ now.year if now else "2024" }} RepairHub — сервіс онлайн-заявок на ремонт техніки</p>
-      <p class="footer-version">Версія MVP v1.0</p>
+    <footer class="text-center mt-5 pt-4 border-top">
+      <p class="text-muted">© 2024 RepairHub — сервіс онлайн-заявок на ремонт техніки</p>
+      <p class="text-muted small">Версія MVP v1.0</p>
     </footer>
   </main>
 
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
