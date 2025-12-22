@@ -2,24 +2,25 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from models import User, RepairRequest, AdminMessage, RequestStatus
+from models import AdminMessage, RepairRequest, RequestStatus, User
 from routes.auth import get_current_user, require_admin
 from settings import get_db
 from tg_bot import send_msg
 
 router = APIRouter()
 
+
 @router.get("/repairs")
 async def get_all_repairs(
     new: int = Query(0),
     current_user: dict = Depends(require_admin),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
 ):
     if new == 1:
         stmt = select(RepairRequest).where(RepairRequest.status == RequestStatus.NEW)
     else:
         stmt = select(RepairRequest)
-    
+
     repairs = await db.scalars(stmt)
     return repairs.all()
 
@@ -28,32 +29,36 @@ async def get_all_repairs(
 async def take_repair(
     repair_id: int,
     current_user: dict = Depends(require_admin),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
 ):
     admin_id = int(current_user["sub"])
-    
+
     stmt = select(RepairRequest).where(RepairRequest.id == repair_id)
     repair = await db.scalar(stmt)
-    
+
     if not repair:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Repair not found")
-    
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Repair not found"
+        )
+
     repair.admin_id = admin_id
     repair.status = RequestStatus.IN_PROGRESS
-    
+
     await db.commit()
     await db.refresh(repair)
-    send_msg(repair.user_id,"Вашу зявку прийняли! \n Очікуйте на подальші повідомлення майстра")
+    send_msg(
+        repair.user_id,
+        "Вашу зявку прийняли! \n Очікуйте на подальші повідомлення майстра",
+    )
     return repair
 
 
 @router.get("/self/repairs")
 async def get_admin_repairs(
-    current_user: dict = Depends(require_admin),
-    db: AsyncSession = Depends(get_db)
+    current_user: dict = Depends(require_admin), db: AsyncSession = Depends(get_db)
 ):
     admin_id = int(current_user["sub"])
-    
+
     stmt = select(RepairRequest).where(RepairRequest.admin_id == admin_id)
     repairs = await db.scalars(stmt)
     return repairs.all()
@@ -64,19 +69,21 @@ async def change_repair_status(
     repair_id: int,
     new_status: RequestStatus,
     current_user: dict = Depends(require_admin),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
 ):
     stmt = select(RepairRequest).where(RepairRequest.id == repair_id)
     repair = await db.scalar(stmt)
-    
+
     if not repair:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Repair not found")
-    
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Repair not found"
+        )
+
     repair.status = new_status
-    
+
     await db.commit()
     await db.refresh(repair)
-    send_msg(repair.user_id,"Статус заявки на ремонт змінено!")
+    send_msg(repair.user_id, "Статус заявки на ремонт змінено!")
     return repair
 
 
@@ -85,24 +92,22 @@ async def create_comment(
     repair_id: int,
     message: str,
     current_user: dict = Depends(require_admin),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
 ):
     admin_id = int(current_user["sub"])
-    
+
     stmt = select(RepairRequest).where(RepairRequest.id == repair_id)
     repair = await db.scalar(stmt)
-    
+
     if not repair:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Repair not found")
-    
-    new_message = AdminMessage(
-        message=message,
-        request_id=repair_id,
-        admin_id=admin_id
-    )
-    
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Repair not found"
+        )
+
+    new_message = AdminMessage(message=message, request_id=repair_id, admin_id=admin_id)
+
     db.add(new_message)
     await db.commit()
     await db.refresh(new_message)
-    send_msg(repair.user_id,"Надійшло нове повідомлення!")
+    send_msg(repair.user_id, "Надійшло нове повідомлення!")
     return new_message

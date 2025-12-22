@@ -1,12 +1,13 @@
 import uvicorn
 from fastapi import FastAPI
-from fastapi.staticfiles import StaticFiles
 from fastapi.exceptions import RequestValidationError
+from fastapi.staticfiles import StaticFiles
 from starlette.exceptions import HTTPException as StarletteHTTPException
-from routes import auth_router, frontend_router, user_account_router, admin_panel_router
-from routes.errors import http_exception_handler, validation_exception_handler, general_exception_handler
-from routes import auth, frontend
 
+from routes import (admin_panel_router, auth, auth_router, frontend,
+                    frontend_router, user_account_router)
+from routes.errors import (general_exception_handler, http_exception_handler,
+                           validation_exception_handler)
 
 app = FastAPI()
 
@@ -24,7 +25,7 @@ app.add_exception_handler(RequestValidationError, validation_exception_handler)
 app.add_exception_handler(Exception, general_exception_handler)
 
 
-
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(f"{__name__}:app", port=8001, reload=True, host="localhost")

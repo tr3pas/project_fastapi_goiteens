@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Адмін-панель — RepairHub</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #0d6efd;
+            --success-color: #198754;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
+            --info-color: #0dcaf0;
+            --secondary-color: #6c757d;
+            --light-bg: #f8f9fa;
+            --dark-bg: #212529;
+        }
+
+        body {
+            background-color: var(--light-bg);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        .sidebar {
+            min-height: 100vh;
+            background: linear-gradient(180deg, #1e3a8a 0%, #1e40af 100%);
+            color: white;
+            padding: 0;
+            position: fixed;
+            width: 260px;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar-logo {
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .sidebar-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .sidebar-subtitle {
+            font-size: 0.875rem;
+            opacity: 0.8;
+            margin: 0;
+        }
+
+        .sidebar-nav {
+            padding: 1rem 0;
+        }
+
+        .nav-item {
+            margin: 0.25rem 0;
+        }
+
+        .nav-link {
+            color: rgba(255, 255, 255, 0.8);
+            padding: 0.75rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            border-left: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border-left-color: white;
+        }
+
+        .nav-link.active {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            border-left-color: white;
+            font-weight: 600;
+        }
+
+        .nav-icon {
+            font-size: 1.25rem;
+            width: 24px;
+            text-align: center;
+        }
+
+        .main-content {
+            margin-left: 260px;
+            padding: 2rem;
+            min-height: 100vh;
+        }
+
+        .top-bar {
+            background: white;
+            padding: 1rem 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .page-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin: 0;
+            color: var(--dark-bg);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            border-left: 4px solid;
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-card.new { border-left-color: var(--info-color); }
+        .stat-card.progress { border-left-color: var(--warning-color); }
+        .stat-card.completed { border-left-color: var(--success-color); }
+        .stat-card.total { border-left-color: var(--primary-color); }
+
+        .stat-icon {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: var(--secondary-color);
+            font-size: 0.875rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--dark-bg);
+        }
+
+        .content-card {
+            background: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            padding: 1.5rem;
+        }
+
+        .filter-bar {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 0.5rem 1rem;
+            border: 2px solid var(--light-bg);
+            border-radius: 2rem;
+            background: white;
+            color: var(--secondary-color);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .filter-btn:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .filter-btn.active {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+            color: white;
+        }
+
+        .repair-card {
+            background: var(--light-bg);
+            border-radius: 0.5rem;
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid;
+            transition: all 0.3s ease;
+        }
+
+        .repair-card:hover {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transform: translateX(3px);
+        }
+
+        .repair-card.status-new { border-left-color: var(--info-color); }
+        .repair-card.status-progress { border-left-color: var(--warning-color); }
+        .repair-card.status-message { border-left-color: var(--primary-color); }
+        .repair-card.status-completed { border-left-color: var(--success-color); }
+        .repair-card.status-cancelled { border-left-color: var(--danger-color); }
+
+        .repair-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 1rem;
+        }
+
+        .repair-id {
+            font-weight: 700;
+            color: var(--dark-bg);
+            font-size: 1.125rem;
+        }
+
+        .repair-status {
+            padding: 0.375rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .status-new { background: var(--info-color); color: white; }
+        .status-progress { background: var(--warning-color); color: var(--dark-bg); }
+        .status-message { background: var(--primary-color); color: white; }
+        .status-completed { background: var(--success-color); color: white; }
+        .status-cancelled { background: var(--danger-color); color: white; }
+
+        .repair-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--secondary-color);
+            font-size: 0.875rem;
+        }
+
+        .info-icon {
+            font-size: 1.125rem;
+        }
+
+        .repair-description {
+            color: var(--dark-bg);
+            margin-bottom: 1rem;
+            line-height: 1.6;
+        }
+
+        .repair-actions {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-sm {
+            padding: 0.375rem 0.875rem;
+            font-size: 0.875rem;
+            border-radius: 0.375rem;
+            font-weight: 600;
+        }
+
+        .modal-content {
+            border-radius: 0.75rem;
+            border: none;
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, var(--primary-color), #0b5ed7);
+            color: white;
+            border-radius: 0.75rem 0.75rem 0 0;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: var(--dark-bg);
+            margin-bottom: 0.5rem;
+        }
+
+        .form-control, .form-select {
+            border: 2px solid var(--light-bg);
+            border-radius: 0.5rem;
+            padding: 0.625rem 0.875rem;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--secondary-color);
+        }
+
+        .empty-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        @media (max-width: 992px) {
+            .sidebar {
+                position: relative;
+                width: 100%;
+                min-height: auto;
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo">A</div>
+            <h5 class="sidebar-title">Адмін-панель</h5>
+            <p class="sidebar-subtitle">RepairHub</p>
+        </div>
+
+        <nav class="sidebar-nav">
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link active" href="/admin">
+                        <span class="nav-icon">📊</span>
+                        <span>Дашборд</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/admin/repairs/all">
+                        <span class="nav-icon">🔧</span>
+                        <span>Всі заявки</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/admin/repairs/new">
+                        <span class="nav-icon">🆕</span>
+                        <span>Нові заявки</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/admin/repairs/my">
+                        <span class="nav-icon">👤</span>
+                        <span>Мої заявки</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/admin/users">
+                        <span class="nav-icon">👥</span>
+                        <span>Користувачі</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/admin/reports">
+                        <span class="nav-icon">📈</span>
+                        <span>Звіти</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <div style="position: absolute; bottom: 0; width: 100%; padding: 1.5rem; border-top: 1px solid rgba(255,255,255,0.1);">
+            <div class="d-flex align-items-center gap-2 mb-2">
+                <div style="width: 40px; height: 40px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                    👤
+                </div>
+                <div>
+                    <div style="font-weight: 600; font-size: 0.875rem;">{{ current_user.username }}</div>
+                    <div style="font-size: 0.75rem; opacity: 0.8;">Адміністратор</div>
+                </div>
+            </div>
+            <a href="/auth/logout" class="btn btn-sm btn-light w-100">Вийти</a>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <h1 class="page-title">Дашборд</h1>
+            <div>
+                <button class="btn btn-outline-primary btn-sm me-2">
+                    🔔 Сповіщення <span class="badge bg-danger">3</span>
+                </button>
+                <button class="btn btn-primary btn-sm">
+                    ➕ Нова заявка
+                </button>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-grid">
+            <div class="stat-card new">
+                <div class="stat-icon">🆕</div>
+                <div class="stat-label">Нові заявки</div>
+                <div class="stat-value" id="stat-new">0</div>
+            </div>
+            <div class="stat-card progress">
+                <div class="stat-icon">⚙️</div>
+                <div class="stat-label">В роботі</div>
+                <div class="stat-value" id="stat-progress">0</div>
+            </div>
+            <div class="stat-card completed">
+                <div class="stat-icon">✅</div>
+                <div class="stat-label">Завершено</div>
+                <div class="stat-value" id="stat-completed">0</div>
+            </div>
+            <div class="stat-card total">
+                <div class="stat-icon">📋</div>
+                <div class="stat-label">Всього</div>
+                <div class="stat-value" id="stat-total">0</div>
+            </div>
+        </div>
+
+        <!-- Repairs List -->
+        <div class="content-card">
+            <h4 class="mb-3">Заявки на ремонт</h4>
+            
+            <!-- Filters -->
+            <div class="filter-bar">
+                <button class="filter-btn active" data-filter="all">Всі</button>
+                <button class="filter-btn" data-filter="NEW">Нові</button>
+                <button class="filter-btn" data-filter="IN_PROGRESS">В роботі</button>
+                <button class="filter-btn" data-filter="COMPLETED">Завершені</button>
+                <button class="filter-btn" data-filter="CANCELLED">Скасовані</button>
+            </div>
+
+            <!-- Repairs Container -->
+            <div id="repairs-container">
+                <div class="empty-state">
+                    <div class="empty-icon">📭</div>
+                    <p>Завантаження заявок...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Change Status Modal -->
+    <div class="modal fade" id="statusModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Змінити статус заявки</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="statusForm">
+                        <input type="hidden" id="status-repair-id">
+                        <div class="mb-3">
+                            <label class="form-label">Новий статус</label>
+                            <select class="form-select" id="new-status" required>
+                                <option value="NEW">Нова</option>
+                                <option value="IN_PROGRESS">В обробці</option>
+                                <option value="MESSAGE">Повідомлення</option>
+                                <option value="COMPLETED">Завершено</option>
+                                <option value="CANCELLED">Скасовано</option>
+                            </select>
+                        </div>
+                        <div class="d-flex gap-2 justify-content-end">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Скасувати</button>
+                            <button type="submit" class="btn btn-primary">Зберегти</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Comment Modal -->
+    <div class="modal fade" id="commentModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Додати коментар</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="commentForm">
+                        <input type="hidden" id="comment-repair-id">
+                        <div class="mb-3">
+                            <label class="form-label">Коментар</label>
+                            <textarea class="form-control" id="comment-text" rows="4" required placeholder="Введіть ваш коментар..."></textarea>
+                        </div>
+                        <div class="d-flex gap-2 justify-content-end">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Скасувати</button>
+                            <button type="submit" class="btn btn-primary">Відправити</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const API_URL = window.location.origin;
+        let allRepairs = [];
+        let currentFilter = 'all';
+
+        // Get token from cookies
+        function getToken() {
+            const cookies = document.cookie.split(';');
+            for (let cookie of cookies) {
+                const [name, value] = cookie.trim().split('=');
+                if (name === 'access_token') {
+                    return value;
+                }
+            }
+            return null;
+        }
+
+        // Fetch repairs
+        async function fetchRepairs() {
+            try {
+                const token = getToken();
+                if (!token) {
+                    window.location.href = '/auth/login';
+                    return;
+                }
+
+                const response = await fetch(`${API_URL}/admin/repairs?new=0`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to fetch repairs');
+                }
+
+                allRepairs = await response.json();
+                updateStats();
+                renderRepairs();
+            } catch (error) {
+                console.error('Error:', error);
+                showError('Помилка завантаження заявок');
+            }
+        }
+
+        // Update statistics
+        function updateStats() {
+            const stats = {
+                new: 0,
+                progress: 0,
+                completed: 0,
+                total: allRepairs.length
+            };
+
+            allRepairs.forEach(repair => {
+                if (repair.status === 'Нова') stats.new++;
+                else if (repair.status === 'В обробці') stats.progress++;
+                else if (repair.status === 'Завершено') stats.completed++;
+            });
+
+            document.getElementById('stat-new').textContent = stats.new;
+            document.getElementById('stat-progress').textContent = stats.progress;
+            document.getElementById('stat-completed').textContent = stats.completed;
+            document.getElementById('stat-total').textContent = stats.total;
+        }
+
+        // Render repairs
+        function renderRepairs() {
+            const container = document.getElementById('repairs-container');
+            
+            let filtered = allRepairs;
+            if (currentFilter !== 'all') {
+                const statusMap = {
+                    'NEW': 'Нова',
+                    'IN_PROGRESS': 'В обробці',
+                    'COMPLETED': 'Завершено',
+                    'CANCELLED': 'Скасовано',
+                    'MESSAGE': 'Повідомлення'
+                };
+                filtered = allRepairs.filter(r => r.status === statusMap[currentFilter]);
+            }
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">📭</div>
+                        <p>Немає заявок для відображення</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = filtered.map(repair => {
+                const statusClass = getStatusClass(repair.status);
+                const date = new Date(repair.created_at).toLocaleDateString('uk-UA');
+                
+                return `
+                    <div class="repair-card ${statusClass}">
+                        <div class="repair-header">
+                            <div>
+                                <div class="repair-id">Заявка #${repair.id}</div>
+                            </div>
+                            <span class="repair-status status-${statusClass.split('-')[1]}">${repair.status}</span>
+                        </div>
+                        <div class="repair-info">
+                            <div class="info-item">
+                                <span class="info-icon">👤</span>
+                                <span>${repair.user?.username || 'Невідомо'}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-icon">📅</span>
+                                <span>${date}</span>
+                            </div>
+                            ${repair.admin ? `
+                            <div class="info-item">
+                                <span class="info-icon">🔧</span>
+                                <span>Майстер: ${repair.admin.username}</span>
+                            </div>
+                            ` : ''}
+                        </div>
+                        <div class="repair-description">
+                            ${repair.description}
+                        </div>
+                        <div class="repair-actions">
+                            ${!repair.admin_id ? `
+                                <button class="btn btn-primary btn-sm" onclick="takeRepair(${repair.id})">
+                                    ✋ Взяти в роботу
+                                </button>
+                            ` : ''}
+                            <button class="btn btn-info btn-sm" onclick="openStatusModal(${repair.id}, '${repair.status}')">
+                                🔄 Змінити статус
+                            </button>
+                            <button class="btn btn-success btn-sm" onclick="openCommentModal(${repair.id})">
+                                💬 Додати коментар
+                            </button>
+                            <button class="btn btn-outline-secondary btn-sm" onclick="viewDetails(${repair.id})">
+                                👁️ Деталі
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function getStatusClass(status) {
+            const map = {
+                'Нова': 'status-new',
+                'В обробці': 'status-progress',
+                'Повідомлення': 'status-message',
+                'Завершено': 'status-completed',
+                'Скасовано': 'status-cancelled'
+            };
+            return map[status] || 'status-new';
+        }
+
+        // Take repair
+        async function takeRepair(repairId) {
+            try {
+                const token = getToken();
+                const response = await fetch(`${API_URL}/admin/repair/${repairId}/self/get`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    await fetchRepairs();
+                    showSuccess('Заявку взято в роботу');
+                } else {
+                    throw new Error('Failed to take repair');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showError('Помилка при взятті заявки');
+            }
+        }
+
+        // Open status modal
+        function openStatusModal(repairId, currentStatus) {
+            document.getElementById('status-repair-id').value = repairId;
+            new bootstrap.Modal(document.getElementById('statusModal')).show();
+        }
+
+        // Submit status change
+        document.getElementById('statusForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const repairId = document.getElementById('status-repair-id').value;
+            const newStatus = document.getElementById('new-status').value;
+            
+            try {
+                const token = getToken();
+                const response = await fetch(`${API_URL}/admin/repair/${repairId}/change/status?new_status=${newStatus}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    bootstrap.Modal.getInstance(document.getElementById('statusModal')).hide();
+                    await fetchRepairs();
+                    showSuccess('Статус змінено');
+                } else {
+                    throw new Error('Failed to change status');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showError('Помилка при зміні статусу');
+            }
+        });
+
+        // Open comment modal
+        function openCommentModal(repairId) {
+            document.getElementById('comment-repair-id').value = repairId;
+            document.getElementById('comment-text').value = '';
+            new bootstrap.Modal(document.getElementById('commentModal')).show();
+        }
+
+        // Submit comment
+        document.getElementById('commentForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const repairId = document.getElementById('comment-repair-id').value;
+            const message = document.getElementById('comment-text').value;
+            
+            try {
+                const token = getToken();
+                const formData = new FormData();
+                formData.append('message', message);
+
+                const response = await fetch(`${API_URL}/admin/repair/${repairId}/change/comment`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: formData
+                });
+
+                if (response.ok) {
+                    bootstrap.Modal.getInstance(document.getElementById('commentModal')).hide();
+                    showSuccess('Коментар додано');
+                } else {
+                    throw new Error('Failed to add comment');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showError('Помилка при додаванні коментаря');
+            }
+        });
+
+        // Filter buttons
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentFilter = btn.dataset.filter;
+                renderRepairs();
+            });
+        });
+
+        function viewDetails(repairId) {
+            window.location.href = `/admin/repair/${repairId}`;
+        }
+
+        function showSuccess(message) {
+            alert('✅ ' + message);
+        }
+
+        function showError(message) {
+            alert('❌ ' + message);
+        }
+
+        // Initial load
+        fetchRepairs();
+    </script>
+</body>
+</html>
