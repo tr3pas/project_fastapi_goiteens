@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Заявка #{{ repair.id }} — RepairHub</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #0d6efd;
+            --success-color: #198754;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
+            --info-color: #0dcaf0;
+            --secondary-color: #6c757d;
+            --light-bg: #f8f9fa;
+            --dark-bg: #212529;
+        }
+
+        body {
+            background-color: var(--light-bg);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            padding-bottom: 3rem;
+        }
+
+        .top-bar {
+            background: white;
+            padding: 1rem 0;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            margin-bottom: 2rem;
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 600;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: rgba(13, 110, 253, 0.1);
+            color: var(--primary-color);
+        }
+
+        .detail-card {
+            background: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .repair-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 2px solid var(--light-bg);
+        }
+
+        .repair-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--dark-bg);
+            margin-bottom: 0.5rem;
+        }
+
+        .repair-status {
+            padding: 0.5rem 1.25rem;
+            border-radius: 2rem;
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+
+        .status-new { background: var(--info-color); color: white; }
+        .status-progress { background: var(--warning-color); color: var(--dark-bg); }
+        .status-message { background: var(--primary-color); color: white; }
+        .status-completed { background: var(--success-color); color: white; }
+        .status-cancelled { background: var(--danger-color); color: white; }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .info-item {
+            background: var(--light-bg);
+            padding: 1.25rem;
+            border-radius: 0.5rem;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .info-label {
+            font-size: 0.875rem;
+            color: var(--secondary-color);
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .info-value {
+            font-size: 1.125rem;
+            color: var(--dark-bg);
+            font-weight: 600;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--dark-bg);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .section-icon {
+            font-size: 1.75rem;
+        }
+
+        .description-box {
+            background: var(--light-bg);
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            line-height: 1.8;
+            color: var(--dark-bg);
+            margin-bottom: 2rem;
+        }
+
+        .photo-container {
+            margin-bottom: 2rem;
+        }
+
+        .repair-photo {
+            max-width: 100%;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .messages-section {
+            margin-top: 2rem;
+        }
+
+        .message-item {
+            background: var(--light-bg);
+            padding: 1.25rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .message-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+
+        .message-author {
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .message-date {
+            font-size: 0.875rem;
+            color: var(--secondary-color);
+        }
+
+        .message-text {
+            color: var(--dark-bg);
+            line-height: 1.6;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 2px solid var(--light-bg);
+        }
+
+        .btn-action {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+        }
+
+        .btn-action:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--secondary-color);
+        }
+
+        @media (max-width: 768px) {
+            .repair-header {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .detail-card {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="top-bar">
+        <div class="container">
+            <a href="/admin" class="back-btn">
+                <span>←</span> Повернутися до панелі
+            </a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="detail-card">
+            <!-- Header -->
+            <div class="repair-header">
+                <div>
+                    <h1 class="repair-title">Заявка #{{ repair.id }}</h1>
+                    <p class="text-muted mb-0">Створена: {{ repair.created_at.strftime('%d.%m.%Y %H:%M') }}</p>
+                </div>
+                <span class="repair-status status-{{ 'new' if repair.status.value == 'Нова' else 'progress' if repair.status.value == 'В обробці' else 'completed' if repair.status.value == 'Завершено' else 'cancelled' }}">
+                    {{ repair.status.value }}
+                </span>
+            </div>
+
+            <!-- Info Grid -->
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-label">👤 Користувач</div>
+                    <div class="info-value">{{ repair.user.username if repair.user else 'Невідомо' }}</div>
+                </div>
+
+                <div class="info-item">
+                    <div class="info-label">📧 Email</div>
+                    <div class="info-value">{{ repair.user.email if repair.user else 'Невідомо' }}</div>
+                </div>
+
+                {% if repair.admin %}
+                <div class="info-item">
+                    <div class="info-label">🔧 Майстер</div>
+                    <div class="info-value">{{ repair.admin.username }}</div>
+                </div>
+                {% endif %}
+
+                {% if repair.required_time %}
+                <div class="info-item">
+                    <div class="info-label">⏰ Бажаний час</div>
+                    <div class="info-value">{{ repair.required_time.strftime('%d.%m.%Y %H:%M') }}</div>
+                </div>
+                {% endif %}
+
+                <div class="info-item">
+                    <div class="info-label">🔄 Оновлено</div>
+                    <div class="info-value">{{ repair.updated_at.strftime('%d.%m.%Y %H:%M') }}</div>
+                </div>
+            </div>
+
+            <!-- Description -->
+            <div>
+                <h3 class="section-title">
+                    <span class="section-icon">📝</span>
+                    Опис проблеми
+                </h3>
+                <div class="description-box">
+                    {{ repair.description }}
+                </div>
+            </div>
+
+            <!-- Photo -->
+            {% if repair.photo_url %}
+            <div class="photo-container">
+                <h3 class="section-title">
+                    <span class="section-icon">📷</span>
+                    Фото
+                </h3>
+                <img src="/{{ repair.photo_url }}" alt="Фото проблеми" class="repair-photo">
+            </div>
+            {% endif %}
+
+            <!-- Messages -->
+            <div class="messages-section">
+                <h3 class="section-title">
+                    <span class="section-icon">💬</span>
+                    Повідомлення від майстра
+                    <span class="badge bg-primary">{{ repair.messages|length }}</span>
+                </h3>
+
+                {% if repair.messages %}
+                    {% for message in repair.messages %}
+                    <div class="message-item">
+                        <div class="message-header">
+                            <div class="message-author">
+                                {{ message.admin.username if message.admin else 'Майстер' }}
+                            </div>
+                            <div class="message-date">
+                                {{ message.created_at.strftime('%d.%m.%Y %H:%M') }}
+                            </div>
+                        </div>
+                        <div class="message-text">
+                            {{ message.message }}
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-state">
+                        <p class="mb-0">Поки що немає повідомлень від майстра</p>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                {% if not repair.admin_id %}
+
+                    {% if not repair.admin_id %}
+                        <button class="btn btn-primary btn-action" onclick="takeRepair({{ repair.id }})">
+                        ✋ Взяти в роботу
+                    </button>
+                {% endif %}
+
+                <button class="btn btn-info btn-action" onclick="openStatusModal({{ repair.id }}, '{{ repair.status.value }}')">
+                    🔄 Змінити статус
+                </button>
+
+                <button class="btn btn-success btn-action" onclick="openCommentModal({{ repair.id }})">
+                    💬 Додати коментар
+                </button>
+
+                <a href="/admin" class="btn btn-secondary btn-action">
+                    🏠 Повернутися
+                </a>
+            </div>
+        </div>
+<script>
+// В начале скрипта определите repairId глобально
+const repairId = {{ repairid if repair else 0 }};
+
+function takeRepair() {
+    if (!repairId || repairId === 0) {
+        alert('Помилка: ID заявки не знайдено');
+        return;
+    }
+    
+    const token = getToken();
+    fetch(`${API_URL}/admin/repair/${repairId}/self/get`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+    })
+    .then(response => {
+        if (response.ok) {
+            alert('✅ Заявку взято в роботу');
+            location.reload();
+        } else {
+            alert('❌ Помилка при взятті заявки');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('❌ Помилка при взятті заявки');
+    });
+}
+
+function openStatusModal() {
+    if (!repairId || repairId === 0) {
+        alert('Помилка: ID заявки не знайдено');
+        return;
+    }
+    document.getElementById('status-repair-id').value = repairId;
+    new bootstrap.Modal(document.getElementById('statusModal')).show();
+}
+
+function openCommentModal() {
+    if (!repairId || repairId === 0) {
+        alert('Помилка: ID заявки не знайдено');
+        return;
+    }
+    document.getElementById('comment-repair-id').value = repairId;
+    document.getElementById('comment-text').value = '';
+    new bootstrap.Modal(document.getElementById('commentModal')).show();
+}
+</script>
+
+<!-- Обновленные кнопки -->
+<div class="action-buttons">
+    {% if not repair.admin_id %}
+        <button class="btn btn-primary btn-action" onclick="takeRepair()">
+            ✋ Взяти в роботу
+        </button>
+    {% endif %}
+
+    <button class="btn btn-info btn-action" onclick="openStatusModal()">
+        🔄 Змінити статус
+    </button>
+
+    <button class="btn btn-success btn-action" onclick="openCommentModal()">
+        💬 Додати коментар
+    </button>
+
+    <a href="/admin" class="btn btn-secondary btn-action">
+        🏠 Повернутися
+    </a>
+</div>
+
+    <!-- Change Status Modal -->
+    <div class="modal fade" id="statusModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Змінити статус заявки</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="statusForm">
+                        <input type="hidden" id="status-repair-id">
+                        <div class="mb-3">
+                            <label class="form-label">Новий статус</label>
+                            <select class="form-select" id="new-status" required>
+                                <option value="NEW">Нова</option>
+                                <option value="IN_PROGRESS">В обробці</option>
+                                <option value="MESSAGE">Повідомлення</option>
+                                <option value="COMPLETED">Завершено</option>
+                                <option value="CANCELLED">Скасовано</option>
+                            </select>
+                        </div>
+                        <div class="d-flex gap-2 justify-content-end">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Скасувати</button>
+                            <button type="submit" class="btn btn-primary">Зберегти</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Comment Modal -->
+    <div class="modal fade" id="commentModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Додати коментар</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="commentForm">
+                        <input type="hidden" id="comment-repair-id">
+                        <div class="mb-3">
+                            <label class="form-label">Коментар</label>
+                            <textarea class="form-control" id="comment-text" rows="4" required placeholder="Введіть ваш коментар..."></textarea>
+                        </div>
+                        <div class="d-flex gap-2 justify-content-end">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Скасувати</button>
+                            <button type="submit" class="btn btn-primary">Відправити</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const API_URL = window.location.origin;
+
+        function getToken() {
+            const cookies = document.cookie.split(';');
+            for (let cookie of cookies) {
+                const [name, value] = cookie.trim().split('=');
+                if (name === 'access_token') return value;
+            }
+            return null;
+        }
+
+        async function takeRepair(repairId) {
+            try {
+                const token = getToken();
+                const response = await fetch(`${API_URL}/admin/repair/${repairId}/self/get`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    alert('✅ Заявку взято в роботу');
+                    location.reload();
+                } else {
+                    throw new Error('Failed to take repair');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('❌ Помилка при взятті заявки');
+            }
+        }
+
+        function openStatusModal(repairId, currentStatus) {
+            document.getElementById('status-repair-id').value = repairId;
+            new bootstrap.Modal(document.getElementById('statusModal')).show();
+        }
+
+        document.getElementById('statusForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const repairId = document.getElementById('status-repair-id').value;
+            const newStatus = document.getElementById('new-status').value;
+            
+            try {
+                const token = getToken();
+                const response = await fetch(`${API_URL}/admin/repair/${repairId}/change/status?new_status=${newStatus}`, {
+                    method: 'PUT',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    bootstrap.Modal.getInstance(document.getElementById('statusModal')).hide();
+                    alert('✅ Статус змінено');
+                    location.reload();
+                } else {
+                    throw new Error('Failed to change status');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('❌ Помилка при зміні статусу');
+            }
+        });
+
+        function openCommentModal(repairId) {
+            document.getElementById('comment-repair-id').value = repairId;
+            document.getElementById('comment-text').value = '';
+            new bootstrap.Modal(document.getElementById('commentModal')).show();
+        }
+
+        document.getElementById('commentForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const repairId = document.getElementById('comment-repair-id').value;
+            const message = document.getElementById('comment-text').value;
+            
+            try {
+                const token = getToken();
+                const formData = new FormData();
+                formData.append('message', message);
+
+                const response = await fetch(`${API_URL}/admin/repair/${repairId}/change/comment`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` },
+                    body: formData
+                });
+
+                if (response.ok) {
+                    bootstrap.Modal.getInstance(document.getElementById('commentModal')).hide();
+                    alert('✅ Коментар додано');
+                    location.reload();
+                } else {
+                    throw new Error('Failed to add comment');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('❌ Помилка при додаванні коментаря');
+            }
+        });
+    </script>
+</body>
+</html>
