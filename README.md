@@ -66,8 +66,43 @@
 git clone https://github.com/your-username/repairhub.git
 cd repairhub
 ```
+
 ### Крок 2: Створення віртуального середовища
-```python -m venv .venv
+```
+python -m venv .venv
 source .venv/bin/activate      # Linux / MacOS
-.venv\Scripts\activate         # Windows```
+.venv\Scripts\activate         # Windows
+```
+
+### Крок 3: Встановлення залежностей
+```
+pip install -r requirements.txt
+```
+
+### Крок 4: Налаштування середовища
+```
+DATABASE_NAME=repairhub_db
+DB_USER=postgres
+DB_PASSWORD=your_password
+DB_HOST=localhost
+DB_PORT=5432
+
+SECRET_KEY=your_secret_key
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+```
+
+### Крок 5: Створення бази даних
+```
+createdb repairhub_db
+```
+### Крок 6: Міграції
+```
+alembic upgrade head
+```
+
+### Крок 7: Створення тестових даних
+```
+python mockdata.py
+```
 
