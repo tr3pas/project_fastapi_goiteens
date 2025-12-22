@@ -104,3 +104,15 @@ alembic upgrade head
 python mockdata.py
 ```
 
+##  стек технологій:
+
+ - Fastapi
+ - SQLAlchemy
+ - pydantic
+ - JWT
+ - Redis
+ - Alembic
+ - postgresql
+ 
+
+
