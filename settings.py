@@ -53,3 +53,14 @@ class Base(AsyncAttrs, DeclarativeBase):
 async def get_db():
     async with async_session() as session:
         yield session
+
+api_config = DatabaseConfig()
+
+# DEBUG: Перевірка SECRET_KEY
+print("=" * 50)
+print("CONFIGURATION CHECK:")
+print(f"DATABASE_NAME: {api_config.DATABASE_NAME}")
+print(f"DB_USER: {api_config.DB_USER}")
+print(f"SECRET_KEY exists: {api_config.SECRET_KEY is not None}")
+print(f"SECRET_KEY length: {len(api_config.SECRET_KEY) if api_config.SECRET_KEY else 0}")
+print("=" * 50)

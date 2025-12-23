@@ -1,5 +1,5 @@
 # routes/frontend.py - Виправлений файл
-
+from starlette.responses import HTMLResponse
 from fastapi import (APIRouter, Cookie, Depends, Form, Request, Response)
 from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
@@ -94,27 +94,20 @@ async def register_page(request: Request, error: str | None = None):
         {"request": request, "error": error}
     )
 
-
 @router.post("/auth/token")
 async def login_form(
     request: Request,
-    response: Response,
     username: str = Form(...),
     password: str = Form(...),
 ):
-    """Обробка форми входу через OAuth2"""
     print(f"\n{'='*50}")
-    print(f"LOGIN ATTEMPT")
-    print(f"Username: {username}")
-    print(f"Password length: {len(password)}")
-    print(f"{'='*50}\n")
+    print(f"LOGIN ATTEMPT: {username}")
     
     try:
         user = await authenticate_user(username, password)
-        print(f"Authentication result: {user}")
 
         if not user:
-            print("❌ Authentication FAILED - returning error page")
+            print("❌ Authentication FAILED")
             return templates.TemplateResponse(
                 "login.html",
                 {"request": request, "error": "Невірне ім'я користувача або пароль"},
@@ -131,27 +124,80 @@ async def login_form(
             "is_admin": user.is_admin,
         }
         access_token = create_access_token(payload=data_payload)
-        print(f"✅ Token created: {access_token[:50]}...")
-
-        # Перенаправляємо адміна на адмін-панель, звичайного користувача на головну
-        redirect_url = "/admin" if user.is_admin else "/"
-        print(f"✅ Redirecting to: {redirect_url}")
-        
-        redirect = RedirectResponse(url=redirect_url, status_code=303)
-
-        # Встановлюємо cookie з токеном
-        redirect.set_cookie(
-            key="access_token",
-            value=access_token,
-            httponly=True,
-            max_age=24 * 60 * 60,  # 1 день
-            samesite="lax",
-        )
-        
-        print(f"✅ Cookie set")
+        print(f"✅ Token created")
         print(f"{'='*50}\n")
 
-        return redirect
+        # Повертаємо HTML з JavaScript для встановлення cookie
+        redirect_url = "/admin" if user.is_admin else "/"
+        
+        html_content = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="utf-8">
+            <title>Redirecting...</title>
+            <style>
+                body {{
+                    font-family: Arial, sans-serif;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    min-height: 100vh;
+                    margin: 0;
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    color: white;
+                }}
+                .loader {{
+                    text-align: center;
+                }}
+                .spinner {{
+                    border: 4px solid rgba(255, 255, 255, 0.3);
+                    border-top: 4px solid white;
+                    border-radius: 50%;
+                    width: 40px;
+                    height: 40px;
+                    animation: spin 1s linear infinite;
+                    margin: 0 auto 1rem;
+                }}
+                @keyframes spin {{
+                    0% {{ transform: rotate(0deg); }}
+                    100% {{ transform: rotate(360deg); }}
+                }}
+            </style>
+        </head>
+        <body>
+            <div class="loader">
+                <div class="spinner"></div>
+                <p>Авторизація успішна...</p>
+            </div>
+            <script>
+                // Встановлюємо cookie
+                const token = "{access_token}";
+                const maxAge = 86400; // 24 години
+                const expires = new Date(Date.now() + maxAge * 1000).toUTCString();
+                
+                document.cookie = `access_token=${{token}}; path=/; max-age=${{maxAge}}; SameSite=Lax`;
+                
+                console.log('Token set:', token.substring(0, 30) + '...');
+                console.log('Cookie:', document.cookie);
+                
+                // Перевірка
+                setTimeout(() => {{
+                    if (document.cookie.includes('access_token')) {{
+                        console.log('✅ Cookie confirmed!');
+                        window.location.href = "{redirect_url}";
+                    }} else {{
+                        console.error('❌ Cookie not set!');
+                        alert('Помилка встановлення cookie. Перевірте налаштування браузера.');
+                    }}
+                }}, 500);
+            </script>
+        </body>
+        </html>
+        """
+        
+        from starlette.responses import HTMLResponse
+        return HTMLResponse(content=html_content)
 
     except Exception as e:
         print(f"❌ LOGIN ERROR: {e}")
@@ -160,10 +206,9 @@ async def login_form(
         
         return templates.TemplateResponse(
             "login.html",
-            {"request": request, "error": f"Помилка при вході: {str(e)}"},
+            {"request": request, "error": "Помилка при вході"},
             status_code=500,
         )
-
 
 @router.post("/auth/register")
 async def register_form(
@@ -385,3 +430,47 @@ async def faq_page(request: Request):
             "error_description": "Сторінка FAQ ще в розробці",
         },
     )
+
+
+async def get_current_user_from_cookie(
+    access_token: str | None = Cookie(None), 
+    db: AsyncSession = Depends(get_db)
+):
+    """Отримати поточного користувача з cookie"""
+    print(f"\n{'='*50}")
+    print(f"GET USER FROM COOKIE")
+    print(f"Cookie access_token: {access_token[:30] if access_token else 'None'}...")
+    
+    if not access_token:
+        print("❌ No access_token in cookie!")
+        print(f"{'='*50}\n")
+        return None
+    
+    try:
+        user_data = decode_access_token(access_token)
+        print(f"User data from decode: {user_data}")
+        
+        if not user_data:
+            print("❌ decode_access_token returned None!")
+            print(f"{'='*50}\n")
+            return None
+        
+        user_id = int(user_data["sub"])
+        print(f"Looking for user_id: {user_id}")
+        
+        user = await db.scalar(select(User).where(User.id == user_id))
+        
+        if user:
+            print(f"✅ User found: {user.username}, is_admin={user.is_admin}")
+        else:
+            print(f"❌ User NOT found in database!")
+        
+        print(f"{'='*50}\n")
+        return user
+        
+    except Exception as e:
+        print(f"❌ Error getting user from cookie: {e}")
+        import traceback
+        traceback.print_exc()
+        print(f"{'='*50}\n")
+        return None
