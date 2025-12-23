@@ -1,0 +1,466 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Вхід — RepairHub</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  
+  <style>
+    :root {
+      --primary-color: #0d6efd;
+      --primary-hover: #0b5ed7;
+      --danger-color: #dc3545;
+      --success-color: #198754;
+      --light-bg: #f8f9fa;
+      --white: #ffffff;
+      --text-primary: #212529;
+      --text-secondary: #6c757d;
+      --text-muted: #9ca3af;
+      --border-color: #dee2e6;
+      --shadow-sm: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+      --shadow-md: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+      --shadow-lg: 0 1rem 3rem rgba(0, 0, 0, 0.175);
+      --border-radius: 0.5rem;
+      --transition: all 0.3s ease;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+    }
+
+    .auth-container {
+      width: 100%;
+      max-width: 450px;
+    }
+
+    .auth-card {
+      background: var(--white);
+      border-radius: 1rem;
+      box-shadow: var(--shadow-lg);
+      overflow: hidden;
+      animation: slideUp 0.5s ease;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .auth-header {
+      background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+      color: var(--white);
+      padding: 2rem;
+      text-align: center;
+    }
+
+    .auth-logo {
+      width: 70px;
+      height: 70px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      font-weight: 700;
+      margin: 0 auto 1rem;
+      backdrop-filter: blur(10px);
+    }
+
+    .auth-title {
+      font-size: 1.75rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .auth-subtitle {
+      font-size: 0.95rem;
+      opacity: 0.9;
+      margin: 0;
+    }
+
+    .auth-body {
+      padding: 2rem;
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .form-control {
+      border: 2px solid var(--border-color);
+      border-radius: var(--border-radius);
+      padding: 0.75rem 1rem;
+      font-size: 1rem;
+      transition: var(--transition);
+    }
+
+    .form-control:focus {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
+    }
+
+    .form-control::placeholder {
+      color: var(--text-muted);
+    }
+
+    .input-icon {
+      font-size: 1.2rem;
+    }
+
+    .password-toggle {
+      position: relative;
+    }
+
+    .password-toggle-btn {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.2rem;
+      color: var(--text-secondary);
+      transition: var(--transition);
+    }
+
+    .password-toggle-btn:hover {
+      color: var(--primary-color);
+    }
+
+    .form-check {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .form-check-input {
+      width: 1.25rem;
+      height: 1.25rem;
+      border: 2px solid var(--border-color);
+      cursor: pointer;
+    }
+
+    .form-check-input:checked {
+      background-color: var(--primary-color);
+      border-color: var(--primary-color);
+    }
+
+    .form-check-label {
+      color: var(--text-secondary);
+      cursor: pointer;
+      margin: 0;
+    }
+
+    .forgot-password {
+      color: var(--primary-color);
+      text-decoration: none;
+      font-size: 0.875rem;
+      font-weight: 600;
+      transition: var(--transition);
+    }
+
+    .forgot-password:hover {
+      color: var(--primary-hover);
+      text-decoration: underline;
+    }
+
+    .btn-login {
+      width: 100%;
+      padding: 0.875rem;
+      font-size: 1.125rem;
+      font-weight: 600;
+      border-radius: var(--border-radius);
+      background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+      border: none;
+      color: var(--white);
+      transition: var(--transition);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .btn-login:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .btn-login:active {
+      transform: translateY(0);
+    }
+
+    .divider {
+      text-align: center;
+      margin: 1.5rem 0;
+      position: relative;
+    }
+
+    .divider::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 50%;
+      width: 100%;
+      height: 1px;
+      background: var(--border-color);
+    }
+
+    .divider-text {
+      background: var(--white);
+      padding: 0 1rem;
+      color: var(--text-muted);
+      font-size: 0.875rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .auth-footer {
+      text-align: center;
+      padding: 0 2rem 2rem;
+    }
+
+    .auth-link {
+      color: var(--primary-color);
+      text-decoration: none;
+      font-weight: 600;
+      transition: var(--transition);
+    }
+
+    .auth-link:hover {
+      color: var(--primary-hover);
+      text-decoration: underline;
+    }
+
+    .back-to-home {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--white);
+      text-decoration: none;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      padding: 0.5rem 1rem;
+      border-radius: var(--border-radius);
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      transition: var(--transition);
+    }
+
+    .back-to-home:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: var(--white);
+      transform: translateX(-3px);
+    }
+
+    .alert {
+      border-radius: var(--border-radius);
+      border: none;
+      margin-bottom: 1.5rem;
+    }
+
+    .alert-danger {
+      background-color: rgba(220, 53, 69, 0.1);
+      color: var(--danger-color);
+      border-left: 4px solid var(--danger-color);
+    }
+
+    .alert-success {
+      background-color: rgba(25, 135, 84, 0.1);
+      color: var(--success-color);
+      border-left: 4px solid var(--success-color);
+    }
+
+    .demo-credentials {
+      background: var(--light-bg);
+      border-radius: var(--border-radius);
+      padding: 1rem;
+      margin-bottom: 1.5rem;
+      border-left: 4px solid var(--primary-color);
+    }
+
+    .demo-credentials h6 {
+      font-size: 0.875rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 0.5rem;
+    }
+
+    .demo-credentials p {
+      font-size: 0.813rem;
+      color: var(--text-secondary);
+      margin: 0;
+      font-family: 'Courier New', monospace;
+    }
+
+    @media (max-width: 576px) {
+      .auth-header {
+        padding: 1.5rem;
+      }
+
+      .auth-body {
+        padding: 1.5rem;
+      }
+
+      .auth-title {
+        font-size: 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="auth-container">
+    <a href="/" class="back-to-home">
+      <span>←</span> Повернутися на головну
+    </a>
+
+    <div class="auth-card">
+      <div class="auth-header">
+        <div class="auth-logo">R</div>
+        <h1 class="auth-title">Вхід</h1>
+        <p class="auth-subtitle">Увійдіть у свій обліковий запис</p>
+      </div>
+
+      <div class="auth-body">
+        {% if error %}
+          <div class="alert alert-danger" role="alert">
+            <strong>Помилка!</strong> {{ error }}
+          </div>
+        {% endif %}
+
+        {% if success %}
+          <div class="alert alert-success" role="alert">
+            <strong>Успіх!</strong> {{ success }}
+          </div>
+        {% endif %}
+
+        <form method="POST" action="/auth/token" id="loginForm">
+          <div class="form-group">
+            <label class="form-label" for="username">
+              <span class="input-icon">👤</span> Ім'я користувача
+            </label>
+            <input 
+              type="text" 
+              class="form-control" 
+              id="username" 
+              name="username" 
+              placeholder="Введіть ім'я користувача"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="password">
+              <span class="input-icon">🔒</span> Пароль
+            </label>
+            <div class="password-toggle">
+              <input 
+                type="password" 
+                class="form-control" 
+                id="password" 
+                name="password" 
+                placeholder="Введіть пароль"
+                required
+              />
+              <button type="button" class="password-toggle-btn" onclick="togglePassword()">
+                👁️
+              </button>
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="form-check">
+              <input 
+                type="checkbox" 
+                class="form-check-input" 
+                id="rememberMe" 
+                name="rememberMe"
+              />
+              <label class="form-check-label" for="rememberMe">
+                Запам'ятати мене
+              </label>
+            </div>
+            <a href="/auth/forgot-password" class="forgot-password">
+              Забули пароль?
+            </a>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-login">
+            Увійти
+          </button>
+        </form>
+      </div>
+
+      <div class="divider">
+        <span class="divider-text">або</span>
+      </div>
+
+      <div class="auth-footer">
+        <p class="text-muted mb-0">
+          Немає облікового запису? <a href="/auth/register" class="auth-link">Зареєструватися</a>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    function togglePassword() {
+      const input = document.getElementById('password');
+      const btn = input.nextElementSibling;
+      
+      if (input.type === 'password') {
+        input.type = 'text';
+        btn.textContent = '🙈';
+      } else {
+        input.type = 'password';
+        btn.textContent = '👁️';
+      }
+    }
+
+    // Remember username from localStorage
+    window.addEventListener('DOMContentLoaded', () => {
+      const savedUsername = localStorage.getItem('rememberedUsername');
+      const rememberCheckbox = document.getElementById('rememberMe');
+      const usernameInput = document.getElementById('username');
+      
+      if (savedUsername) {
+        usernameInput.value = savedUsername;
+        rememberCheckbox.checked = true;
+      }
+    });
+
+    // Save username if "Remember me" is checked
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+      const rememberCheckbox = document.getElementById('rememberMe');
+      const usernameInput = document.getElementById('username');
+      
+      if (rememberCheckbox.checked) {
+        localStorage.setItem('rememberedUsername', usernameInput.value);
+      } else {
+        localStorage.removeItem('rememberedUsername');
+      }
+    });
+  </script>
+</body>
+</html>

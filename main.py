@@ -28,4 +28,5 @@ async def on_startup():
     asyncio.create_task(start())
 
 if __name__ == "__main__":
-    uvicorn.run(f"{__name__}:app", port=8000, reload=True)
+    import uvicorn
+    uvicorn.run(f"{__name__}:app", port=8001, reload=True, host="localhost")
