@@ -92,17 +92,15 @@ SECRET_KEY=your_secret_key
 
 ### Крок 5: Створення бази даних
 ```
-createdb repairhub_db
+python mockdata.py
 ```
 ### Крок 6: Міграції
 ```
+alembic revision --autogenerate -m "Описание миграции"
+
 alembic upgrade head
 ```
 
-### Крок 7: Створення тестових даних
-```
-python mockdata.py
-```
 
 ##  стек технологій:
 
